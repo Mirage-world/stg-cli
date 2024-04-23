@@ -1,0 +1,18 @@
+#git
+.git
+
+# dependencies
+node_modules/
+package-lock.json
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# bin
+bin
+
+# macOS
+.DS_Store
+*.pem
