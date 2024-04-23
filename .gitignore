@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# bin
+bin
+
+# macOS
+.DS_Store
+*.pem
