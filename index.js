@@ -3,9 +3,9 @@
 const fs = require("fs");
 const readline = require("readline");
 const path = require("path");
-const Table = require("cli-table");
+const Table = require("cli-table3");
 const { spawn } = require("child_process");
-const yaml = require("js-yaml");
+const yaml = require("yaml");
 const os = require("os");
 const args = process.argv.splice(process.execArgv.length + 2);
 const userCommand = args[0];
@@ -365,7 +365,7 @@ function findYmlFiles(jsonPayload) {
     ) {
       for (const ymlFile of ymlFiles) {
         const fileContent = fs.readFileSync(ymlFile, "utf8");
-        const workflowConfig = yaml.load(fileContent);
+        const workflowConfig = yaml.parse(fileContent);
         const ymlBranch = workflowConfig.on.push.branches[0];
         const app = {
           uuid: null,

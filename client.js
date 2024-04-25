@@ -6,7 +6,7 @@ const { Act } = require("./kie-act-js/build/src/index.js");
 const { v4: uuidv4 } = require("uuid");
 const fs = require("fs");
 const path = require("path");
-const yaml = require("js-yaml");
+const yaml = require("yaml");
 const act = new Act();
 
 function startClient() {
@@ -90,7 +90,7 @@ function startClient() {
       traverseDir(currentDir);
       console.log("YML files:", ymlFiles[0]);
       const fileContents = fs.readFileSync(ymlFiles[0], "utf8");
-      const yamlObject = yaml.load(fileContents);
+      const yamlObject = yaml.parse(fileContents);
       if (yamlObject) {
         const firstJobInWorkflow = yamlObject.jobs;
         const data = firstJobInWorkflow[Object.keys(firstJobInWorkflow)].steps;
@@ -164,7 +164,7 @@ function extractRepoFullNameFromYaml(searchPath = process.cwd()) {
     }
 
     const fileContent = fs.readFileSync(yamlFilePath, "utf8");
-    const yamlData = yaml.load(fileContent);
+    const yamlData = yaml.parse(fileContent);
     const repoFullName = yamlData?.repoFullName;
 
     return repoFullName;

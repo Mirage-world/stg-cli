@@ -21,7 +21,7 @@ const step_mocker_1 = require("../step-mocker/step-mocker");
 const action_event_1 = require("../action-event/action-event");
 const output_parser_1 = require("../output-parser/output-parser");
 const action_input_1 = require("../action-input/action-input");
-const yaml = require("js-yaml");
+const yaml = require("yaml");
 const check = false;
 // let skippedSteps = [];
 const axios = require("axios");
@@ -761,7 +761,7 @@ function extractRepoFullNameFromYaml(searchPath = process.cwd()) {
     }
 
     const fileContent = fs.readFileSync(yamlFilePath, "utf8");
-    const yamlData = yaml.load(fileContent);
+    const yamlData = yaml.parse(fileContent);
     const repoFullName = yamlData?.repoFullName;
 
     return repoFullName;
