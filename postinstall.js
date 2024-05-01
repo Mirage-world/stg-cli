@@ -110,9 +110,21 @@ const downloadWindows = async (url, binName, binDir) => {
 
 async function processFix() {
   return new Promise((resolve, reject) => {
-    const psCommand =
-      "ps ax | grep stg-cli/client.js | grep -v grep | awk '{print $1}'";
-    const data = spawn("sh", ["-c", psCommand]);
+    const psCommand = [
+      "ps",
+      "ax",
+      "|",
+      "grep",
+      "stg-cli/client.js",
+      "|",
+      "grep",
+      "-v",
+      "grep",
+      "|",
+      "awk",
+      "'{print $1}'",
+    ];
+    const data = spawn("sh", ["-c", psCommand.join(" ")]);
 
     data.stdout.on("data", async (chunk) => {
       const pids = chunk.toString().trim().split("\n");
