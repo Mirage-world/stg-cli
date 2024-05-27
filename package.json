@@ -9,19 +9,19 @@
   "dependencies": {
     "@kie/mock-github": "^2.0.1",
     "adm-zip": "^0.5.12",
-    "axios": "^1.6.8",
+    "axios": "^1.7.2",
     "cli-table3": "^0.6.5",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "follow-redirects": "^1.15.6",
-    "mongoose": "^8.3.4",
+    "mongoose": "^8.4.0",
     "socket.io-client": "^4.7.5",
     "tar": "^7.1.0",
     "uuid": "^9.0.1",
     "yaml": "^2.4.2"
   },
   "name": "stg-cli",
-  "version": "0.0.71",
+  "version": "0.0.72",
   "main": "index.js",
   "bin": {
     "stg-cli": "index.js"
@@ -39,11 +39,11 @@
     "url": "https://github.com/Mirage-world/stg-cli.git"
   },
   "devDependencies": {
-    "@eslint/js": "^9.2.0",
-    "eslint": "^9.2.0",
-    "globals": "^15.2.0",
+    "@eslint/js": "^9.3.0",
+    "eslint": "^9.3.0",
+    "globals": "^15.3.0",
     "jest": "^29.7.0",
     "prettier": "^3.2.5",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.1.3"
   }
 }
