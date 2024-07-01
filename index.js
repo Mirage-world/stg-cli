@@ -209,7 +209,9 @@ async function initializePackage() {
     try {
       const data = fs.readFileSync(pidFilePath, "utf-8");
       const existingData = JSON.parse(data);
-      existingData.push({ projectName, pid, appId });
+      const runStatus=false;
+      const Queue= false;
+      existingData.push({ projectName, pid, appId,runStatus,Queue });
       fs.writeFileSync(
         pidFilePath,
         JSON.stringify(existingData, null, 2),
@@ -217,9 +219,11 @@ async function initializePackage() {
       );
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
+      const runStatus=false;
+      const Queue= false;
       fs.writeFileSync(
         pidFilePath,
-        JSON.stringify([{ projectName, pid, appId }], null, 2),
+        JSON.stringify([{ projectName, pid, appId ,runStatus,Queue}], null, 2),
         "utf-8",
       );
     }
