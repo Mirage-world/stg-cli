@@ -64,10 +64,10 @@ function startClient() {
       const filecheck= JSON.parse(fileContent);
       const ymlFiles = findYmlFiles(jsonPayload);
       // console.log(ymlFiles, '-----------------------------------------------------------------');
-      if(filecheck.find(project => project.projectName === lastWord && project.runStatus === true)|| filecheck.every(project => project.runStatus === false))
+      if(filecheck.find(project => project.pathKey === currentDir && project.runStatus === true)|| filecheck.every(project => project.runStatus === false))
       {if (ymlFiles?.length) {
         filecheck.forEach(project => {
-          if (project.projectName === lastWord) {
+          if (project.pathKey === currentDir) {
             project.runStatus = true;
           }
         });

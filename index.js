@@ -211,7 +211,8 @@ async function initializePackage() {
       const existingData = JSON.parse(data);
       const runStatus=false;
       const Queue= false;
-      existingData.push({ projectName, pid, appId,runStatus,Queue });
+      const pathKey = process.cwd();
+      existingData.push({ projectName, pid, appId, runStatus, Queue, pathKey });
       fs.writeFileSync(
         pidFilePath,
         JSON.stringify(existingData, null, 2),
@@ -221,9 +222,10 @@ async function initializePackage() {
     } catch (error) {
       const runStatus=false;
       const Queue= false;
+      const pathKey = process.cwd();
       fs.writeFileSync(
         pidFilePath,
-        JSON.stringify([{ projectName, pid, appId ,runStatus,Queue}], null, 2),
+        JSON.stringify([{ projectName, pid, appId , runStatus, Queue, pathKey}], null, 2),
         "utf-8",
       );
     }
