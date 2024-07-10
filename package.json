@@ -22,7 +22,7 @@
     "yaml": "^2.4.2"
   },
   "name": "stg-cli",
-  "version": "0.0.74",
+  "version": "0.0.75",
   "main": "index.js",
   "bin": {
     "stg-cli": "index.js"
