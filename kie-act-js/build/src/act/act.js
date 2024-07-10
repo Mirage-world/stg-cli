@@ -426,7 +426,7 @@ class Act {
       // const uniqueId = uuidv4();
       let uuid = null;
       let pushEventPayload = null;
-
+      let userAccount=null
       const configApps = loadConfiguredApplications();
       if (configApps?.length) {
         const app = configApps[configApps.length - 1];
@@ -438,6 +438,7 @@ class Act {
         }
         uuid = app?.uuid;
         pushEventPayload = app?.pushEventPayload;
+        userAccount= app?.userAccount
       }
 
       childProcess.stdout.on("data", (chunk) => {
@@ -513,7 +514,7 @@ class Act {
                 pushEventPayload,
                 index, // add index field
                 workflowName: this.currentWorkflowName,
-
+                userAccount:userAccount,
                 logsMetadata: {
                   step: res.trim(),
                   conclusion,

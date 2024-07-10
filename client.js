@@ -54,6 +54,7 @@ function startClient() {
   socket.on("sendDataToPackage", async(payload) => {
     console.log(`Client: Received payload from backend: ${payload}`);
     const jsonPayload = JSON.stringify(payload.gitPayload);
+    const userAccount = payload.userAccount;
     console.log(`Client: Received json payload from backend: ${jsonPayload}`);
     if (payload) {
       const fileContent = fs.existsSync(pidFilePath)
@@ -62,7 +63,7 @@ function startClient() {
       const currentDir = process.cwd();
       const lastWord = currentDir.substring(currentDir.lastIndexOf('/') + 1);
       const filecheck= JSON.parse(fileContent);
-      const ymlFiles = findYmlFiles(jsonPayload);
+      const ymlFiles = findYmlFiles(jsonPayload, userAccount);
       // console.log(ymlFiles, '-----------------------------------------------------------------');
       if(filecheck.find(project => project.pathKey === currentDir && project.runStatus === true)|| filecheck.every(project => project.runStatus === false))
       {if (ymlFiles?.length) {
