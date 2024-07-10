@@ -5,7 +5,7 @@ const readline = require("readline");
 const path = require("path");
 const Table = require("cli-table3");
 const { spawn } = require("child_process");
-const yaml = require("yaml");
+const yaml = require("js-yaml");
 const os = require("os");
 const args = process.argv.splice(process.execArgv.length + 2);
 const userCommand = args[0];
@@ -332,13 +332,13 @@ async function stop(appId) {
   }
 }
 
-function findYmlFiles(jsonPayload) {
-  const configApps = loadConfiguredApplications();
+function findYmlFiles(jsonPayload,userAccount, appId) {
+  let configApps = loadConfiguredApplications();
   const currentDir = process.cwd();
   const ymlFiles = [];
 
   function traverseDir(currentDir) {
-    const files = fs.readdirSync(currentDir);
+    let files = fs.readdirSync(currentDir);
     for (const file of files) {
       const filePath = path.join(currentDir, file);
       if (fs.statSync(filePath).isDirectory()) {
@@ -360,13 +360,15 @@ function findYmlFiles(jsonPayload) {
 
   if (ymlFiles?.length) {
     const pushEventPayload = JSON.parse(jsonPayload);
+    console.log(pushEventPayload,userAccount)
+    if(userAccount==='Github'){
     const branchPush = pushEventPayload?.ref.replace("refs/heads/", "");
-
     let lastIndexApp = null;
     let filterConfigApps = null;
+    let configid = null;
     if (configApps?.length) {
       filterConfigApps = configApps.filter(
-        (obj) => obj?.repoId === pushEventPayload?.repository?.id,
+        (obj) => obj?.repoId == pushEventPayload?.repository?.id
       );
       if (filterConfigApps?.length) {
         lastIndexApp = filterConfigApps[filterConfigApps?.length - 1];
@@ -382,7 +384,7 @@ function findYmlFiles(jsonPayload) {
     ) {
       for (const ymlFile of ymlFiles) {
         const fileContent = fs.readFileSync(ymlFile, "utf8");
-        const workflowConfig = yaml.parse(fileContent);
+        const workflowConfig = yaml.load(fileContent);
         const ymlBranch = workflowConfig.on.push.branches[0];
         const app = {
           uuid: null,
@@ -395,6 +397,77 @@ function findYmlFiles(jsonPayload) {
           pushEventPayload,
           branch: branchPush,
           projectName: path.basename(currentDir),
+          userAccount:userAccount
+        };
+        if (
+          filterConfigApps?.length === 0 ||
+          configApps?.length === 0 ||
+          lastIndexApp?.status === "active"
+        ) {
+          // Set appId from init.json
+          const initFilePath = path.join(__dirname, "init.json");
+          const initData = fs.readFileSync(initFilePath, "utf-8");
+          const { initializedProjects } = JSON.parse(initData);
+          const project = initializedProjects.find(
+            (project) => project.projectName === app.projectName
+          );
+          if (project) {
+            app.appId = project.appId;
+          } else {
+            console.log(`Project '${app.appName}' not found in init.json`);
+            continue; // Skip adding app to configApps if projectId not found
+          }
+          configApps.push(app);
+          if (ymlBranch === branchPush) {
+            saveConfiguredApplications(configApps, configAppsFile);
+            return ymlFiles;
+          } else {
+            console.log("Branch mismatch");
+          }
+        } else {
+          console.log("condition not match");
+        }
+      }
+    } else {
+      console.log("Failed to locate onetab-pipeline yml file.");
+    }}
+    else if(userAccount==='Bitbucket'){
+      const branchPush = pushEventPayload?.push.changes[0].new.name;
+    let lastIndexApp = null;
+    let filterConfigApps = null;
+    let configid = null;
+    if (configApps?.length) {
+      filterConfigApps = configApps.filter(
+        (obj) => obj?.repoId == pushEventPayload?.repository?.uuid
+      );
+      if (filterConfigApps?.length) {
+        lastIndexApp = filterConfigApps[filterConfigApps?.length - 1];
+      }
+    }
+
+    const configAppsFile = path.join(__dirname, "configuredApplications.json");
+
+    if (
+      filterConfigApps?.length === 0 ||
+      configApps?.length === 0 ||
+      lastIndexApp?.status === "active"
+    ) {
+      for (const ymlFile of ymlFiles) {
+        const fileContent = fs.readFileSync(ymlFile, "utf8");
+        const workflowConfig = yaml.load(fileContent);
+        const ymlBranch = workflowConfig.on.push.branches[0];
+        const app = {
+          uuid: null,
+          appId: null,
+          repoId: pushEventPayload?.repository?.uuid,
+          appName: pushEventPayload?.repository?.full_name,
+          commitId: pushEventPayload?.push.changes[0].commits[0].hash,
+          status: "active",
+          path: ymlFile,
+          pushEventPayload,
+          branch: branchPush,
+          projectName: path.basename(currentDir),
+          userAccount:userAccount
         };
         if (
           filterConfigApps?.length === 0 ||
@@ -427,6 +500,10 @@ function findYmlFiles(jsonPayload) {
       }
     } else {
       console.log("Failed to locate onetab-pipeline yml file.");
+    }
+    }
+    else{
+
     }
   }
 }
