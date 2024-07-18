@@ -209,8 +209,8 @@ async function initializePackage() {
     try {
       const data = fs.readFileSync(pidFilePath, "utf-8");
       const existingData = JSON.parse(data);
-      const runStatus=false;
-      const Queue= false;
+      const runStatus = false;
+      const Queue = false;
       const pathKey = process.cwd();
       existingData.push({ projectName, pid, appId, runStatus, Queue, pathKey });
       fs.writeFileSync(
@@ -220,12 +220,12 @@ async function initializePackage() {
       );
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      const runStatus=false;
-      const Queue= false;
+      const runStatus = false;
+      const Queue = false;
       const pathKey = process.cwd();
       fs.writeFileSync(
         pidFilePath,
-        JSON.stringify([{ projectName, pid, appId , runStatus, Queue, pathKey}], null, 2),
+        JSON.stringify([{ projectName, pid, appId, runStatus, Queue, pathKey }], null, 2),
         "utf-8",
       );
     }
@@ -332,7 +332,7 @@ async function stop(appId) {
   }
 }
 
-function findYmlFiles(jsonPayload,userAccount, appId) {
+function findYmlFiles(jsonPayload, userAccount, appId) {
   let configApps = loadConfiguredApplications();
   const currentDir = process.cwd();
   const ymlFiles = [];
@@ -360,150 +360,219 @@ function findYmlFiles(jsonPayload,userAccount, appId) {
 
   if (ymlFiles?.length) {
     const pushEventPayload = JSON.parse(jsonPayload);
-    console.log(pushEventPayload,userAccount)
-    if(userAccount==='Github'){
-    const branchPush = pushEventPayload?.ref.replace("refs/heads/", "");
-    let lastIndexApp = null;
-    let filterConfigApps = null;
-    let configid = null;
-    if (configApps?.length) {
-      filterConfigApps = configApps.filter(
-        (obj) => obj?.repoId == pushEventPayload?.repository?.id
-      );
-      if (filterConfigApps?.length) {
-        lastIndexApp = filterConfigApps[filterConfigApps?.length - 1];
-      }
-    }
-
-    const configAppsFile = path.join(__dirname, "configuredApplications.json");
-
-    if (
-      filterConfigApps?.length === 0 ||
-      configApps?.length === 0 ||
-      lastIndexApp?.status === "active"
-    ) {
-      for (const ymlFile of ymlFiles) {
-        const fileContent = fs.readFileSync(ymlFile, "utf8");
-        const workflowConfig = yaml.load(fileContent);
-        const ymlBranch = workflowConfig.on.push.branches[0];
-        const app = {
-          uuid: null,
-          appId: null,
-          repoId: pushEventPayload?.repository?.id,
-          appName: pushEventPayload?.repository?.full_name,
-          commitId: pushEventPayload?.head_commit?.id,
-          status: "active",
-          path: ymlFile,
-          pushEventPayload,
-          branch: branchPush,
-          projectName: path.basename(currentDir),
-          userAccount:userAccount
-        };
-        if (
-          filterConfigApps?.length === 0 ||
-          configApps?.length === 0 ||
-          lastIndexApp?.status === "active"
-        ) {
-          // Set appId from init.json
-          const initFilePath = path.join(__dirname, "init.json");
-          const initData = fs.readFileSync(initFilePath, "utf-8");
-          const { initializedProjects } = JSON.parse(initData);
-          const project = initializedProjects.find(
-            (project) => project.projectName === app.projectName
-          );
-          if (project) {
-            app.appId = project.appId;
-          } else {
-            console.log(`Project '${app.appName}' not found in init.json`);
-            continue; // Skip adding app to configApps if projectId not found
-          }
-          configApps.push(app);
-          if (ymlBranch === branchPush) {
-            saveConfiguredApplications(configApps, configAppsFile);
-            return ymlFiles;
-          } else {
-            console.log("Branch mismatch");
-          }
-        } else {
-          console.log("condition not match");
+    console.log(pushEventPayload, userAccount)
+    if (userAccount === 'Github') {
+      const branchPush = pushEventPayload?.ref.replace("refs/heads/", "");
+      let lastIndexApp = null;
+      let filterConfigApps = null;
+      let configid = null;
+      if (configApps?.length) {
+        filterConfigApps = configApps.filter(
+          (obj) => obj?.repoId == pushEventPayload?.repository?.id
+        );
+        if (filterConfigApps?.length) {
+          lastIndexApp = filterConfigApps[filterConfigApps?.length - 1];
         }
       }
-    } else {
-      console.log("Failed to locate onetab-pipeline yml file.");
-    }}
-    else if(userAccount==='Bitbucket'){
+
+      const configAppsFile = path.join(__dirname, "configuredApplications.json");
+
+      if (
+        filterConfigApps?.length === 0 ||
+        configApps?.length === 0 ||
+        lastIndexApp?.status === "active"
+      ) {
+        for (const ymlFile of ymlFiles) {
+          const fileContent = fs.readFileSync(ymlFile, "utf8");
+          const workflowConfig = yaml.load(fileContent);
+          const ymlBranch = workflowConfig.on.push.branches[0];
+          const app = {
+            uuid: null,
+            appId: null,
+            repoId: pushEventPayload?.repository?.id,
+            appName: pushEventPayload?.repository?.full_name,
+            commitId: pushEventPayload?.head_commit?.id,
+            status: "active",
+            path: ymlFile,
+            pushEventPayload,
+            branch: branchPush,
+            projectName: path.basename(currentDir),
+            userAccount: userAccount
+          };
+          if (
+            filterConfigApps?.length === 0 ||
+            configApps?.length === 0 ||
+            lastIndexApp?.status === "active"
+          ) {
+            // Set appId from init.json
+            const initFilePath = path.join(__dirname, "init.json");
+            const initData = fs.readFileSync(initFilePath, "utf-8");
+            const { initializedProjects } = JSON.parse(initData);
+            const project = initializedProjects.find(
+              (project) => project.projectName === app.projectName
+            );
+            if (project) {
+              app.appId = project.appId;
+            } else {
+              console.log(`Project '${app.appName}' not found in init.json`);
+              continue; // Skip adding app to configApps if projectId not found
+            }
+            configApps.push(app);
+            if (ymlBranch === branchPush) {
+              saveConfiguredApplications(configApps, configAppsFile);
+              return ymlFiles;
+            } else {
+              console.log("Branch mismatch");
+            }
+          } else {
+            console.log("condition not match");
+          }
+        }
+      } else {
+        console.log("Failed to locate onetab-pipeline yml file.");
+      }
+    }
+    else if (userAccount === 'Bitbucket') {
       const branchPush = pushEventPayload?.push.changes[0].new.name;
-    let lastIndexApp = null;
-    let filterConfigApps = null;
-    let configid = null;
-    if (configApps?.length) {
-      filterConfigApps = configApps.filter(
-        (obj) => obj?.repoId == pushEventPayload?.repository?.uuid
-      );
-      if (filterConfigApps?.length) {
-        lastIndexApp = filterConfigApps[filterConfigApps?.length - 1];
-      }
-    }
-
-    const configAppsFile = path.join(__dirname, "configuredApplications.json");
-
-    if (
-      filterConfigApps?.length === 0 ||
-      configApps?.length === 0 ||
-      lastIndexApp?.status === "active"
-    ) {
-      for (const ymlFile of ymlFiles) {
-        const fileContent = fs.readFileSync(ymlFile, "utf8");
-        const workflowConfig = yaml.load(fileContent);
-        const ymlBranch = workflowConfig.on.push.branches[0];
-        const app = {
-          uuid: null,
-          appId: null,
-          repoId: pushEventPayload?.repository?.uuid,
-          appName: pushEventPayload?.repository?.full_name,
-          commitId: pushEventPayload?.push.changes[0].commits[0].hash,
-          status: "active",
-          path: ymlFile,
-          pushEventPayload,
-          branch: branchPush,
-          projectName: path.basename(currentDir),
-          userAccount:userAccount
-        };
-        if (
-          filterConfigApps?.length === 0 ||
-          configApps?.length === 0 ||
-          lastIndexApp?.status === "active"
-        ) {
-          // Set appId from init.json
-          const initFilePath = path.join(__dirname, "init.json");
-          const initData = fs.readFileSync(initFilePath, "utf-8");
-          const { initializedProjects } = JSON.parse(initData);
-          const project = initializedProjects.find(
-            (project) => project.projectName === app.projectName,
-          );
-          if (project) {
-            app.appId = project.appId;
-          } else {
-            console.log(`Project '${app.appName}' not found in init.json`);
-            continue; // Skip adding app to configApps if projectId not found
-          }
-          configApps.push(app);
-          if (ymlBranch === branchPush) {
-            saveConfiguredApplications(configApps, configAppsFile);
-            return ymlFiles;
-          } else {
-            console.log("Branch mismatch");
-          }
-        } else {
-          console.log("condition not match");
+      let lastIndexApp = null;
+      let filterConfigApps = null;
+      let configid = null;
+      if (configApps?.length) {
+        filterConfigApps = configApps.filter(
+          (obj) => obj?.repoId == pushEventPayload?.repository?.uuid
+        );
+        if (filterConfigApps?.length) {
+          lastIndexApp = filterConfigApps[filterConfigApps?.length - 1];
         }
       }
-    } else {
-      console.log("Failed to locate onetab-pipeline yml file.");
-    }
-    }
-    else{
 
+      const configAppsFile = path.join(__dirname, "configuredApplications.json");
+
+      if (
+        filterConfigApps?.length === 0 ||
+        configApps?.length === 0 ||
+        lastIndexApp?.status === "active"
+      ) {
+        for (const ymlFile of ymlFiles) {
+          const fileContent = fs.readFileSync(ymlFile, "utf8");
+          const workflowConfig = yaml.load(fileContent);
+          const ymlBranch = workflowConfig.on.push.branches[0];
+          const app = {
+            uuid: null,
+            appId: null,
+            repoId: pushEventPayload?.repository?.uuid,
+            appName: pushEventPayload?.repository?.full_name,
+            commitId: pushEventPayload?.push.changes[0].commits[0].hash,
+            status: "active",
+            path: ymlFile,
+            pushEventPayload,
+            branch: branchPush,
+            projectName: path.basename(currentDir),
+            userAccount: userAccount
+          };
+          if (
+            filterConfigApps?.length === 0 ||
+            configApps?.length === 0 ||
+            lastIndexApp?.status === "active"
+          ) {
+            // Set appId from init.json
+            const initFilePath = path.join(__dirname, "init.json");
+            const initData = fs.readFileSync(initFilePath, "utf-8");
+            const { initializedProjects } = JSON.parse(initData);
+            const project = initializedProjects.find(
+              (project) => project.projectName === app.projectName,
+            );
+            if (project) {
+              app.appId = project.appId;
+            } else {
+              console.log(`Project '${app.appName}' not found in init.json`);
+              continue; // Skip adding app to configApps if projectId not found
+            }
+            configApps.push(app);
+            if (ymlBranch === branchPush) {
+              saveConfiguredApplications(configApps, configAppsFile);
+              return ymlFiles;
+            } else {
+              console.log("Branch mismatch");
+            }
+          } else {
+            console.log("condition not match");
+          }
+        }
+      } else {
+        console.log("Failed to locate onetab-pipeline yml file.");
+      }
+    }
+    else if (userAccount === 'Gitlab') {
+      const branchPush = pushEventPayload?.ref.replace("refs/heads/", "");
+      let lastIndexApp = null;
+      let filterConfigApps = null;
+      let configid = null;
+      if (configApps?.length) {
+        filterConfigApps = configApps.filter(
+          (obj) => obj?.repoId == pushEventPayload?.project?.id
+        );
+        if (filterConfigApps?.length) {
+          lastIndexApp = filterConfigApps[filterConfigApps?.length - 1];
+        }
+      }
+
+      const configAppsFile = path.join(__dirname, "configuredApplications.json");
+
+      if (
+        filterConfigApps?.length === 0 ||
+        configApps?.length === 0 ||
+        lastIndexApp?.status === "active"
+      ) {
+        for (const ymlFile of ymlFiles) {
+          const fileContent = fs.readFileSync(ymlFile, "utf8");
+          const workflowConfig = yaml.load(fileContent);
+          const ymlBranch = workflowConfig.on.push.branches[0];
+          const app = {
+            uuid: null,
+            appId: null,
+            repoId: pushEventPayload?.project?.id,
+            appName: pushEventPayload?.project?.path_with_namespace,
+            commitId: pushEventPayload?.after,
+            status: "active",
+            path: ymlFile,
+            pushEventPayload,
+            branch: branchPush,
+            projectName: path.basename(currentDir),
+            userAccount: userAccount
+          };
+          if (
+            filterConfigApps?.length === 0 ||
+            configApps?.length === 0 ||
+            lastIndexApp?.status === "active"
+          ) {
+            // Set appId from init.json
+            const initFilePath = path.join(__dirname, "init.json");
+            const initData = fs.readFileSync(initFilePath, "utf-8");
+            const { initializedProjects } = JSON.parse(initData);
+            const project = initializedProjects.find(
+              (project) => project.projectName === app.projectName
+            );
+            if (project) {
+              app.appId = project.appId;
+            } else {
+              console.log(`Project '${app.appName}' not found in init.json`);
+              continue; // Skip adding app to configApps if projectId not found
+            }
+            configApps.push(app);
+            if (ymlBranch === branchPush) {
+              saveConfiguredApplications(configApps, configAppsFile);
+              return ymlFiles;
+            } else {
+              console.log("Branch mismatch");
+            }
+          } else {
+            console.log("condition not match");
+          }
+        }
+      } else {
+        console.log("Failed to locate onetab-pipeline yml file.");
+      }
     }
   }
 }
