@@ -228,7 +228,7 @@ function extractRepoFullNameFromYaml(searchPath = process.cwd()) {
           }
         } else if (file.endsWith("onetab-pipeline.yml")) {
           yamlFilePath = filePath;
-          break; // Stop traversal once the file is found
+          break;
         }
       }
     }
