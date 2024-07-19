@@ -502,7 +502,7 @@ function findYmlFiles(jsonPayload,userAccount, appId) {
       console.log("Failed to locate onetab-pipeline yml file.");
     }
     }
-    else if (userAccount === 'Gitlab'){
+    else if (userAccount === 'GitLab'){
       const branchPush = pushEventPayload?.ref.replace("refs/heads/", "");
       let lastIndexApp = null;
       let filterConfigApps = null;
