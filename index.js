@@ -573,6 +573,76 @@ function findYmlFiles(jsonPayload,userAccount, appId) {
         console.log("Failed to locate onetab-pipeline yml file.");
       }
     }
+    else if (userAccount === 'Gitea') {
+      const branchPush = pushEventPayload?.ref.replace("refs/heads/", "");
+      let lastIndexApp = null;
+      let filterConfigApps = null;
+      if (configApps?.length) {
+        filterConfigApps = configApps.filter(
+          (obj) => obj?.repoId == pushEventPayload?.repository?.id
+        );
+        if (filterConfigApps?.length) {
+          lastIndexApp = filterConfigApps[filterConfigApps.length - 1];
+        }
+      }
+  
+      const configAppsFile = path.join(__dirname, "configuredApplications.json");
+  
+      if (
+        filterConfigApps?.length === 0 ||
+        configApps?.length === 0 ||
+        lastIndexApp?.status === "active"
+      ) {
+        for (const ymlFile of ymlFiles) {
+          const fileContent = fs.readFileSync(ymlFile, "utf8");
+          const workflowConfig = yaml.load(fileContent);
+          const ymlBranch = workflowConfig.on.push.branches[0];
+          const app = {
+            uuid: null,
+            appId: null,
+            repoId: pushEventPayload?.repository?.id,
+            appName: pushEventPayload?.repository?.full_name,
+            commitId: pushEventPayload?.head_commit?.id,
+            status: "active",
+            path: ymlFile,
+            pushEventPayload,
+            branch: branchPush,
+            projectName: path.basename(currentDir),
+            userAccount: userAccount
+          };
+          if (
+            filterConfigApps?.length === 0 ||
+            configApps?.length === 0 ||
+            lastIndexApp?.status === "active"
+          ) {
+            // Set appId from init.json
+            const initFilePath = path.join(__dirname, "init.json");
+            const initData = fs.readFileSync(initFilePath, "utf-8");
+            const { initializedProjects } = JSON.parse(initData);
+            const project = initializedProjects.find(
+              (project) => project.projectName === app.projectName
+            );
+            if (project) {
+              app.appId = project.appId;
+            } else {
+              console.log(`Project '${app.appName}' not found in init.json`);
+              continue; // Skip adding app to configApps if projectId not found
+            }
+            configApps.push(app);
+            if (ymlBranch === branchPush) {
+              saveConfiguredApplications(configApps, configAppsFile);
+              return ymlFiles;
+            } else {
+              console.log("Branch mismatch");
+            }
+          } else {
+            console.log("Condition not match");
+          }
+        }
+      } else {
+        console.log("Failed to locate onetab-pipeline yml file.");
+      }
+    }
   }
 }
 
